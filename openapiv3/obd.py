@@ -21,9 +21,5 @@ class OBD:
             "DeviceID": self._la._deviceID,
             "Key": self._la._key2018
         }
-        r = requests.get(self._la.getAddress() + "/GetOBDCheck",
-                params = payload,
-                headers={'Content-Type': 'application/x-www-form-urlencoded'}
-                )
-        json = utils.getJSON(r.content.decode())
+        json = self._la.getRequest("GetOBDCheck", payload)
         logger.debug(json)
