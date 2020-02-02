@@ -7,9 +7,13 @@ AliExpress which looks like this one:
 ![GPS ODB2 Tracker](/doc/images/gps_tracker.png)
 After reading attached instruction - I have found error - they say to connect to 3.tkstargps.net side but app is AIKA. What I found - that device is connecting (after sending SMS to it) to XX.aika168.com - and communication between mobile app and server is open (no ssl). This was an invitation to create this library. Other GPS OBD2 Trackers that work with AIKA mobile app should work with this library too. How to check that? Look at pictures of 
 mobile app that usuary is shown on pages where somebody is selling device. If you see something like:
+<<<<<<< HEAD
 ![AIKA APP](/doc/images/OBD-II-GPS-Tracker.jpg)
 
 Map with blue top bar with reload button on right and back arrow on left. This is AIKA app. And here is a link to Google app store: [AIKA app](https://play.google.com/store/apps/details?id=com.fw.gps.xinmai&hl=en_US).
+=======
+![AIKA APP](/doc/images/OBD-II-GPS-Tracker.jpg). Map with blue top bar with reload button on right and back arrow on left. This is AIKA app. And here is a link to Google app store: [AIKA app](https://play.google.com/store/apps/details?id=com.fw.gps.xinmai&hl=en_US).
+>>>>>>> 91a72a77bf32dd4148feddf0d7404bb6f391a31a
 
 # How to use this code?
 It's a library. To integrate with your code you have to write something like this:
