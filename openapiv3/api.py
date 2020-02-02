@@ -17,43 +17,48 @@ class API(api_caller.ApiCaller):
     
     __attrs__ = [
         'app_address',
-        'battery',
-        'batteryStatus',
-        'course',
-        'dataContext', 
-        'deviceID',
-        'deviceName',
-        'ICCID',
-        'icon',
-        'id',
-        'isGPS',
-        'isStop',
-        'lat',
-        'lng',
-        'model',
-        'new201710',
-        'ofl',
-        'olat',
-        'olng',
-        'positionTime',
+        'battery', # GetTracking, GetDeviceStatus, GetDeviceStatusFZE
+        'batteryStatus', # GetTracking, GetDeviceStatus, GetDeviceStatusFZE
+        'course', # GetTracking
+        'dataContext', # GetDeviceStatus, GetDeviceStatusFZE
+        'deviceID', # Login
+        'deviceName', # Login
+        'ICCID', # GetTracking
+        'icon', # Login, GetTracking
+        'id', # GetDeviceStatus, GetDeviceStatusFZE
+        'isGPS', # GetTracking
+        'isStop', # GetTracking
+        'key2018', # Login
+        'lat', # GetTracking
+        'lng', # GetTracking
+        'model', # Login
+        'new201710', # Login
+        'ofl', # GetTracking
+        'olat', # GetTracking
+        'olng', # GetTracking
+        'positionTime', # GetTracking
         'serialNumber',
-        'sendCommand',
-        'speed',
-        'state',
-        'status',
-        'statusX20',
-        'stm',
-        'timeZone',
-        'VIN',
-        'voice',
-        'warn',
-        'warnStr',
-        'warnTime',
-        'warnTxt',
-        'work',
-        'xg',
-        'yinshen'
+        'sendCommand', # Login, GetDeviceStatus, GetDeviceStatusFZE
+        'speed', # GetTracking
+        'sn', # Login
+        'state', # Login, GetTracking, GetDeviceStatus, GetDeviceStatus2ByDDC, GetDeviceStatusFZE
+        'status', # GetTracking, GetDeviceStatus, GetDeviceStatusFZE
+        'statusX20', # GetTracking, GetDeviceStatus, GetDeviceStatusFZE
+        'stm', # GetTracking
+        'timeZone', # Login
+        'VIN', # GetTracking
+        'voice', # Login, GetDeviceStatus, GetDeviceStatusFZE
+        'warn', # GetTracking
+        'warnStr', # Login
+        'warnTime', # GetDeviceStatus, GetDeviceStatusFZE
+        'warnTxt', # GetDeviceStatus, GetDeviceStatusFZE
+        'work', # GetTracking
+        'xg', # Login
+        'yinshen' # GetDeviceStatus, GetDeviceStatusFZE
     ]
+
+    INT_DATA = ['model', 'id', 'deviceID']
+    BOOL_DATA = ['isGPS', 'isStop', 'xg', 'icon', 'new201710']
     def __init__(self, server):
 
         super().__init__(server)
@@ -80,8 +85,8 @@ class API(api_caller.ApiCaller):
         for key in self.__attrs__:
             if key in response:
                 v = response[key]
-                if key in ['isGPS', 'isStop']:
+                if key in self.BOOL_DATA:
                     v = (int(v) == 1)
-                elif key in ['model', 'id', 'deviceID', 'xg']:
+                elif key in self.INT_DATA:
                     v = int(v)
                 setattr(self, key, v)
