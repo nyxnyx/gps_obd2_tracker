@@ -1,25 +1,22 @@
 import logging
 import requests
 
-from . import login_action, utils
+from . import api, utils
 
 logger = logging.getLogger(__name__)
 
 
 class OBD:
 
-    def __init__(self, loginAction):
+    def __init__(self, interface):
         
-        if loginAction.getKey2018() == "":
-            logger.error("No Key2018!!! Did you log in?")
-        else:
-            self._la = loginAction
+        self.api = interface
     
     def get_obd_data(self):
 
         payload = {
-            "DeviceID": self._la._deviceID,
-            "Key": self._la._key2018
+            "DeviceID": self.api.deviceID
         }
-        json = self._la.getRequest("GetOBDCheck", payload)
+        json = self.api.getRequest("GetOBDCheck", payload)
         logger.debug(json)
+        self.api.doSave(payload)

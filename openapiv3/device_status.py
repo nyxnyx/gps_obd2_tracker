@@ -1,54 +1,44 @@
 import logging
-from . import login_action
+from . import api
 
 logger = logging.getLogger(__name__)
 
 class DeviceStatus:
 
-    def __init__(self, loginAction):
+    def __init__(self, interface):
 
-        self._la = loginAction
+        self.api = interface
     
     def get_device_status(self):
 
         payload = {
-            "DeviceID": self._la._deviceID,
-            "TimeZones": self._la._timeZone,
-            "Language": "pl_PL",
+            "DeviceID": self.api.deviceID,
+            "TimeZones": self.api.timeZone,
+            "Language": self.api.language,
             "FilterWarn": ""
         }
-        _set_device_status(self._la.getRequest("GetDeviceStatus", payload))
+        json = self.api.getRequest("GetDeviceStatus", payload)
+        logger.debug(json)
+        self.api.doSave(json)
 
     def get_device_status2_by_DDC(self):
             
         payload = {
-            "DeviceID": self._la._deviceID,
-            "Language": "pl_PL"
+            "DeviceID": self.api.deviceID,
+            "Language": self.api.language
         }
-        json = self._la.getRequest("GetDeviceStatus2ByDDC", payload)
+        json = self.api.getRequest("GetDeviceStatus2ByDDC", payload)
         logger.debug(json)
-        self._la._state = json("state")
+        self.api.doSave(json)
         
     def get_device_status_FZE(self):
+        
         payload = {
-            "DeviceID": self._la._deviceID,
-            "TimeZones": self._la._timeZone,
-            "Language": "pl_PL",
+            "DeviceID": self.api.deviceID,
+            "TimeZones": self.api.timeZone,
+            "Language": self.api.language,
             "FilterWarn": ""
         }
-        json = self._la.getRequest("GetDeviceStatusFZE", payload)
+        json = self.api.getRequest("GetDeviceStatusFZE", payload)
         logger.debug(json)
-
-        def _set_device_status(self, json):
-            here = self._la
-            here._state = json["state"]
-            here._id = json["id"]
-            here._yinshen = json["yinshen"]
-            here._sendCommand = json["sendCommand"]
-            here._voice = json["voice"]
-            here._warnTxt = json["warnTxt"]
-            here._warnTime = json["warnTime"]
-            here._dataContext = json["dataContext"]
-            here._battery = json["battery"]
-            here._batteryStatus = json["batteryStatus"]
-            here._statusX20 = json["statusX20"]
+        self.api.doSave(json)
