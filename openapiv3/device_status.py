@@ -1,9 +1,9 @@
 import logging
-from . import api
+from . import api, updater
 
 logger = logging.getLogger(__name__)
 
-class DeviceStatus:
+class DeviceStatus(updater.isUpdater):
 
     def __init__(self, interface):
 
@@ -42,3 +42,6 @@ class DeviceStatus:
         json = self.api.getRequest("GetDeviceStatusFZE", payload)
         logger.debug(json)
         self.api.doSave(json)
+    
+    def update(self):
+        self.get_device_status()

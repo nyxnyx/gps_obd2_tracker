@@ -1,9 +1,9 @@
 import logging
-from . import api
+from . import api, updater
 
 logger = logging.getLogger(__name__)
 
-class Location:
+class Location(updater.isUpdater):
 
     def __init__(self, interface):
 
@@ -22,3 +22,6 @@ class Location:
         json = self.api.getRequest("GetTracking", payload)
         logger.debug(json)
         self.api.doSave(json)
+    
+    def update(self):
+        self.getTracking()

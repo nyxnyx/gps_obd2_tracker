@@ -2,6 +2,7 @@ import requests
 from . import getapp
 from . import utils
 from . import api_caller
+from . import updater
 
 import logging
 logger = logging.getLogger(__name__)
@@ -59,6 +60,7 @@ class API(api_caller.ApiCaller):
 
     INT_DATA = ['model', 'id', 'deviceID']
     BOOL_DATA = ['isGPS', 'isStop', 'xg', 'icon', 'new201710']
+    updaters = []
     def __init__(self, server):
 
         super().__init__(server)
@@ -67,9 +69,9 @@ class API(api_caller.ApiCaller):
     
     def doLogin(self, username, password):
 
-        payload = { 'Name': username, 
-                    'Pass': password, 
-                    'LoginType': 1, 
+        payload = { 'Name': username,
+                    'Pass': password,
+                    'LoginType': 1,
                     'Key': APP_KEY
                     }
 
@@ -90,3 +92,12 @@ class API(api_caller.ApiCaller):
                 elif key in self.INT_DATA:
                     v = int(v)
                 setattr(self, key, v)
+
+    def doUpdate(self):
+        if len(self.updaters) > 0:
+            for u in self.updaters:
+                u.update()
+
+    def registerUpdater(self, interface):
+        if isinstance(interface, updater.isUpdater):
+            self.updaters.append(interface)    
