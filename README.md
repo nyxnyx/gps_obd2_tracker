@@ -33,5 +33,5 @@ if __name__ == "__main__":
 
 # What is next step?
 Right now I'm working on:
-## Home Assistant device tracker
-## App for getting information about protocol between device and gateway at XX.aika168.com
+- Home Assistant device tracker
+- App for getting information about protocol between device and gateway at XX.aika168.com
