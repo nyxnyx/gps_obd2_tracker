@@ -1,0 +1,17 @@
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.aika168.com:80
+DEBUG:urllib3.connectionpool:http://www.aika168.com:80 "GET //getapp.aspx HTTP/1.1" 200 42
+DEBUG:openapiv3:b'http://app.aika168.com:8088/openapiv3.asmx'
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): www.aika168.com:80
+DEBUG:urllib3.connectionpool:http://www.aika168.com:80 "GET //getapp.aspx HTTP/1.1" 200 42
+DEBUG:openapiv3:b'http://app.aika168.com:8088/openapiv3.asmx'
+DEBUG:urllib3.connectionpool:Starting new HTTP connection (1): app.aika168.com:8088
+DEBUG:urllib3.connectionpool:http://app.aika168.com:8088 "GET /openapiv3.asmx/Login?Name=7018095531&Pass=770608&LoginType=1&Key=7DU2DJFDR8321 HTTP/1.1" 200 409
+DEBUG:openapiv3.api:Got: {'state': '0', 'deviceInfo': {'deviceID': '963547', 'model': '71', 'sn': '7018095531', 'sendCommand': '1-1-1-1-0', 'voice': '1', 'deviceName': 'AK-95531', 'warnStr': '', 'timeZone': 'China Standard Time', 'new201710': '1', 'icon': '1', 'key2018': 'aNYaqbl6eZNJBmIuejw8Ikbp1QQxZP4pCy1esTYgcDgn+OWbLwuk6/iw8r6k+qgrBehbM06a+YIdSDE+99CmTg==', 'xg': '1'}}
+DEBUG:urllib3.connectionpool:http://app.aika168.com:8088 "GET /openapiv3.asmx/GetTracking?DeviceID=963547&Model=71&TimeZones=China+Standard+Time&MapType=Google&Language=en&Key=aNYaqbl6eZNJBmIuejw8Ikbp1QQxZP4pCy1esTYgcDgn%2BOWbLwuk6%2Fiw8r6k%2BqgrBehbM06a%2BYIdSDE%2B99CmTg%3D%3D HTTP/1.1" 200 446
+DEBUG:openapiv3.location:{'state': '0', 'positionTime': '2020-01-30 04:27:12', 'lat': '46.66073', 'lng': '13.85703', 'ofl': '3', 'olat': '46.66073', 'olng': '13.85703', 'speed': '0.00', 'course': '0', 'isStop': '1', 'icon': '1', 'isGPS': '1', 'ICCID': '8948031852014131006F', 'VIN': '', 'stm': '69', 'warn': '', 'work': '', 'battery': '-1', 'batteryStatus': '-1', 'status': '2-ACC OFF,Dismiss,Power Connected', 'statusX20': ''}
+DEBUG:urllib3.connectionpool:http://app.aika168.com:8088 "GET /openapiv3.asmx/GetDeviceStatus?DeviceID=963547&TimeZones=China+Standard+Time&Language=en&FilterWarn=&Key=aNYaqbl6eZNJBmIuejw8Ikbp1QQxZP4pCy1esTYgcDgn%2BOWbLwuk6%2Fiw8r6k%2BqgrBehbM06a%2BYIdSDE%2B99CmTg%3D%3D HTTP/1.1" 200 340
+DEBUG:openapiv3.device_status:{'state': '0', 'id': '963547', 'yinshen': '0', 'sendCommand': '1-1-1-1-0', 'voice': '1', 'warnTxt': 'GEO-fence Out', 'warnTime': '2020/01/28 13:43', 'dataContext': '0-0-0-1', 'battery': '-1', 'batteryStatus': '-1', 'status': '2-ACC OFF,Dismiss,Power Connected', 'statusX20': ''}
+DEBUG:urllib3.connectionpool:http://app.aika168.com:8088 "GET /openapiv3.asmx/GetDeviceStatus2ByDDC?DeviceID=963547&Language=en&Key=aNYaqbl6eZNJBmIuejw8Ikbp1QQxZP4pCy1esTYgcDgn%2BOWbLwuk6%2Fiw8r6k%2BqgrBehbM06a%2BYIdSDE%2B99CmTg%3D%3D HTTP/1.1" 200 101
+DEBUG:openapiv3.device_status:{'state': '2002'}
+DEBUG:urllib3.connectionpool:http://app.aika168.com:8088 "GET /openapiv3.asmx/GetDeviceStatusFZE?DeviceID=963547&TimeZones=China+Standard+Time&Language=en&FilterWarn=&Key=aNYaqbl6eZNJBmIuejw8Ikbp1QQxZP4pCy1esTYgcDgn%2BOWbLwuk6%2Fiw8r6k%2BqgrBehbM06a%2BYIdSDE%2B99CmTg%3D%3D HTTP/1.1" 200 340
+DEBUG:openapiv3.device_status:{'state': '0', 'id': '963547', 'yinshen': '0', 'sendCommand': '1-1-1-1-0', 'voice': '1', 'warnTxt': 'GEO-fence Out', 'warnTime': '2020/01/28 13:43', 'dataContext': '0-0-0-1', 'battery': '-1', 'batteryStatus': '-1', 'status': '2-ACC OFF,Dismiss,Power Connected', 'statusX20': ''}

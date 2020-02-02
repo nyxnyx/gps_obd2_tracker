@@ -74,7 +74,7 @@ class API(api_caller.ApiCaller):
                     }
 
         json = self.getRequest('Login', payload)
-        logger.debug("Got: %s", json)
+        logger.debug("doLogin: %s", json)
         self.doSave(json)
     
     def doSave(self, response):
