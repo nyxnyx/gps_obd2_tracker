@@ -1,2 +1,5 @@
 __main__.py
 *.pyc
+*.egg-info
+dist
+build
