@@ -19,13 +19,16 @@ import logging
 
 def main():
     la = api.API("http://www.aika168.com/")
-    la.doLogin('<your device Id>', '<your aika168.com password>')
-    ds = location.Location(la)
-    ds.getTracking()
-    ds = device_status.DeviceStatus(la)
-    ds.get_device_status()
-    ds.get_device_status2_by_DDC()
-    ds.get_device_status_FZE()
+    la.registerUpdater(location.Location(la))
+    la.registerUpdater(device_status.DeviceStatus(la))
+
+    loop = asyncio.get_event_loop()
+
+    loop.run_until_complete(la.doLogin('<Your device id>', '<Your server password>') )
+    loop.run_until_complete(la.doUpdate())
+
+    attrs = vars(la)
+    print(', '.join("%s: %s" % item for item in attrs.items()))
 
 if __name__ == "__main__":
     main()
