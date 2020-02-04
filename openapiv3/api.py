@@ -67,7 +67,7 @@ class API(api_caller.ApiCaller):
         self.app_address = getapp(server)
         self.language = "en"
     
-    def doLogin(self, username, password):
+    async def doLogin(self, username, password):
 
         payload = { 'Name': username,
                     'Pass': password,
@@ -75,7 +75,7 @@ class API(api_caller.ApiCaller):
                     'Key': APP_KEY
                     }
 
-        json = self.getRequest('Login', payload)
+        json = await self.getRequest('Login', payload)
         logger.debug("doLogin: %s", json)
         self.doSave(json)
     
@@ -93,10 +93,10 @@ class API(api_caller.ApiCaller):
                     v = int(v)
                 setattr(self, key, v)
 
-    def doUpdate(self):
+    async def doUpdate(self):
         if len(self.updaters) > 0:
             for u in self.updaters:
-                u.update()
+                await u.update()
 
     def registerUpdater(self, interface):
         if isinstance(interface, updater.isUpdater):

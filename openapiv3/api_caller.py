@@ -1,5 +1,6 @@
-import requests
+import http3
 import logging
+
 from . import getapp
 from . import utils
 
@@ -23,10 +24,10 @@ class ApiCaller():
         self.api_source = server
         self.api_address = getapp(self.api_source)
         self.key = None
-        self.session = requests.Session()
+        self.client = http3.AsyncClient()
         self.last_response = None
 
-    def getRequest(self, requestName, payload):
+    async def getRequest(self, requestName, payload):
         """
         Process request, extracts required data and save it for next requests.
         Returns JSON object from response.
@@ -39,17 +40,18 @@ class ApiCaller():
 
         self._addKey(requestName, payload)
 
-        response = self.session.get(
+        response = await self.client.get(
                     self.api_address+"/"+requestName,
                     params = payload,
                     headers = DEFAULT_HEADER
                 )
+        
         self.last_response = response
 
-        if not response.ok:
+        if not response.status_code:
             raise Exception(message = response.content.decode() + response.headers)
         else:
-            json = utils.getJSON(response.content.decode())
+            json = utils.getJSON(response.text)
             if requestName == "Login":
                 self.key = json["deviceInfo"]["key2018"]
 

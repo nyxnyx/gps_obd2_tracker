@@ -9,7 +9,7 @@ class Location(updater.isUpdater):
 
         self.api = interface
 
-    def getTracking(self):
+    async def getTracking(self):
 
         payload = {
             "DeviceID": self.api.deviceID,
@@ -19,9 +19,9 @@ class Location(updater.isUpdater):
             "Language": self.api.language
         }
 
-        json = self.api.getRequest("GetTracking", payload)
+        json = await self.api.getRequest("GetTracking", payload)
         logger.debug(json)
         self.api.doSave(json)
     
-    def update(self):
-        self.getTracking()
+    async def update(self):
+        await self.getTracking()

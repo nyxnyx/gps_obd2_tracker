@@ -9,7 +9,7 @@ class DeviceStatus(updater.isUpdater):
 
         self.api = interface
     
-    def get_device_status(self):
+    async def get_device_status(self):
 
         payload = {
             "DeviceID": self.api.deviceID,
@@ -17,21 +17,21 @@ class DeviceStatus(updater.isUpdater):
             "Language": self.api.language,
             "FilterWarn": ""
         }
-        json = self.api.getRequest("GetDeviceStatus", payload)
+        json = await self.api.getRequest("GetDeviceStatus", payload)
         logger.debug(json)
         self.api.doSave(json)
 
-    def get_device_status2_by_DDC(self):
+    async def get_device_status2_by_DDC(self):
             
         payload = {
             "DeviceID": self.api.deviceID,
             "Language": self.api.language
         }
-        json = self.api.getRequest("GetDeviceStatus2ByDDC", payload)
+        json = await self.api.getRequest("GetDeviceStatus2ByDDC", payload)
         logger.debug(json)
         self.api.doSave(json)
         
-    def get_device_status_FZE(self):
+    async def get_device_status_FZE(self):
         
         payload = {
             "DeviceID": self.api.deviceID,
@@ -39,9 +39,9 @@ class DeviceStatus(updater.isUpdater):
             "Language": self.api.language,
             "FilterWarn": ""
         }
-        json = self.api.getRequest("GetDeviceStatusFZE", payload)
+        json = await self.api.getRequest("GetDeviceStatusFZE", payload)
         logger.debug(json)
         self.api.doSave(json)
     
-    def update(self):
-        self.get_device_status()
+    async def update(self):
+        await self.get_device_status()
