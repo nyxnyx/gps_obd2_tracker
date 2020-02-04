@@ -4,11 +4,11 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="openapiv3", # Replace with your own username
-    version="0.0.4",
+    name="odbtracker", # Replace with your own username
+    version="0.1.0",
     author="Grzegorz Szostak",
     author_email="szostak.grzegorz@gmail.com",
-    description="Library to read data from aika160.com and other cloud services to track cars with GPS trackers installed",
+    description="Library to read data from http://www.aika168.com and other cloud services to track cars with GPS trackers installed",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/nyxnyx/gps_obd2_tracker",
