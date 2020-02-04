@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="openapiv3", # Replace with your own username
-    version="0.0.3",
+    version="0.0.4",
     author="Grzegorz Szostak",
     author_email="szostak.grzegorz@gmail.com",
     description="Library to read data from aika160.com and other cloud services to track cars with GPS trackers installed",
