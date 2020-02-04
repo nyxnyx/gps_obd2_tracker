@@ -14,7 +14,7 @@ Map with blue top bar with reload button on right and back arrow on left. This i
 # How to use this code?
 It's a library. To integrate with your code you have to write something like this:
 ```
-from openapiv3 import api, device_status, obd, location
+from obdtracker import api, device_status, obd, location
 import logging
 
 def main():
