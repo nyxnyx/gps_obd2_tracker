@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="odbtracker", # Replace with your own username
+    name="obdtracker", # Replace with your own username
     version="0.1.0",
     author="Grzegorz Szostak",
     author_email="szostak.grzegorz@gmail.com",
