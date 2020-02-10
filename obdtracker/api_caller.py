@@ -1,4 +1,4 @@
-import httpx
+import http3
 import logging
 import asyncio
 
@@ -26,7 +26,7 @@ class ApiCaller():
         self.api_address = getapp(self.api_source)
         self.key = None
         self.id = None
-        self.client = httpx.AsyncClient()
+        self.client = http3.AsyncClient()
         self.last_response = None
 
     async def getRequest(self, requestName, payload):
