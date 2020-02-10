@@ -1,5 +1,6 @@
-import http3
+import httpx
 import logging
+import asyncio
 
 from . import getapp
 from . import utils
@@ -15,7 +16,7 @@ class ApiCaller():
     process responses.
     """
     __attrs__ = [
-        'api_source', 'api_address', 'key', 'session', 'last_response'
+        'api_source', 'api_address', 'key', 'client', 'last_response'
     ]
     def __init__(self, server):
         """
@@ -24,7 +25,8 @@ class ApiCaller():
         self.api_source = server
         self.api_address = getapp(self.api_source)
         self.key = None
-        self.client = http3.AsyncClient()
+        self.id = None
+        self.client = httpx.AsyncClient()
         self.last_response = None
 
     async def getRequest(self, requestName, payload):
@@ -39,7 +41,9 @@ class ApiCaller():
             requestName = str(requestName).replace('/','')
 
         self._addKey(requestName, payload)
-
+        if self.id == None and "DeviceID" in payload:
+            self.id = payload["DeviceID"]
+            logger.info("Saving ID: %s" % self.id)
         response = await self.client.get(
                     self.api_address+"/"+requestName,
                     params = payload,
@@ -59,7 +63,7 @@ class ApiCaller():
 
     def postRequest(self, requestName, payload):
 
-        response = self.session.post(
+        response = self.client.post(
                                     self.api_address + "/" + requestName,
                                     data = payload,
                                     headers = DEFAULT_HEADER
@@ -75,3 +79,7 @@ class ApiCaller():
             payload["Key"] = self.key
         
         return payload
+    
+    def __del__(self):
+        asyncio.ensure_future(self.getRequest("ExitAndroid", payload={"ID": self.id, "TypeID": "1", "Key": self.key } ) )
+        logger.info("Destructor")

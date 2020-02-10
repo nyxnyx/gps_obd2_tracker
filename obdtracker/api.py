@@ -1,4 +1,3 @@
-import requests
 from . import getapp
 from . import utils
 from . import api_caller
@@ -61,6 +60,7 @@ class API(api_caller.ApiCaller):
     INT_DATA = ['model', 'id', 'deviceID']
     BOOL_DATA = ['isGPS', 'isStop', 'xg', 'icon', 'new201710', 'voice']
     updaters = []
+    
     def __init__(self, server):
 
         super().__init__(server)
