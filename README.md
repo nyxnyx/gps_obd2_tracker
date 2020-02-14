@@ -34,6 +34,14 @@ if __name__ == "__main__":
     main()
 ```
 
+# NEW: list of UNSUPPORTED mobile applications
+If you are going to buy GPS OBD2 Tracker checkout this list to see which mobile apps are unsupported. Acually it means that those mobile apps use cloud service that is not supported with this tool:
+(Unsupported cloud / OBD2 GPS Trackers)[/doc/unsupported.md]
+
+# Supported apps / cloud services:
+1. aika168.com / www.aika168.com - developed using this cloud service - works
+1. gpscj.net / gps18.com - not sure - possibly it is working
+
 # What is next step?
 Right now I'm working on:
 - Home Assistant device tracker
