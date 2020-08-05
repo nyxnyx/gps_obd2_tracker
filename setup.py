@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="obdtracker", # Replace with your own username
-    version="0.2.1",
+    version="0.2.2",
     author="Grzegorz Szostak",
     author_email="szostak.grzegorz@gmail.com",
     description="Library to read data from http://www.aika168.com and other cloud services to track cars with GPS trackers installed",

@@ -1,7 +1,7 @@
 import http3
 import logging
 import asyncio
-
+import xml.etree.ElementTree
 from . import getapp
 from . import utils
 
@@ -26,8 +26,10 @@ class ApiCaller():
         self.api_address = getapp(self.api_source)
         self.key = None
         self.id = None
-        self.client = http3.AsyncClient()
         self.last_response = None
+
+    async def connect(self):
+        self.client = http3.AsyncClient()
 
     async def getRequest(self, requestName, payload):
         """
@@ -37,11 +39,14 @@ class ApiCaller():
         param: requestName: It's a name of API endpoint
         param: payload: dict of params to be send to API endpoint
         """
+        if not hasattr(self, "client"):
+            await self.connect()
+
         if '/' in requestName:
             requestName = str(requestName).replace('/','')
 
         self._addKey(requestName, payload)
-        if self.id == None and "DeviceID" in payload:
+        if self.id is None and "DeviceID" in payload:
             self.id = payload["DeviceID"]
             logger.info("Saving ID: %s" % self.id)
         response = await self.client.get(
@@ -51,17 +56,26 @@ class ApiCaller():
                 )
         
         self.last_response = response
-
+        json = None
         if not response.status_code:
             raise Exception(message = response.content.decode() + response.headers)
+        elif len(response.content) == 0:
+            logger.debug("Content length is 0")
         else:
-            json = utils.getJSON(response.text)
+            try:
+                json = utils.getJSON(response.text)
+            except xml.etree.ElementTree.ParseError as e:
+                logger.debug(F"Can't parse response {len(response.content)}")
+
             if requestName == "Login":
                 self.key = json["deviceInfo"]["key2018"]
 
             return json
 
-    def postRequest(self, requestName, payload):
+    async def postRequest(self, requestName, payload):
+
+        if not hasattr(self, "client"):
+            await self.connect()
 
         response = self.client.post(
                                     self.api_address + "/" + requestName,

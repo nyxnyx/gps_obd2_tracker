@@ -2,6 +2,7 @@ from . import getapp
 from . import utils
 from . import api_caller
 from . import updater
+import time
 
 import logging
 logger = logging.getLogger(__name__)
@@ -72,6 +73,8 @@ class API(api_caller.ApiCaller):
         payload = { 'Name': username,
                     'Pass': password,
                     'LoginType': 1,
+                    'LoginAPP': "AKSH",
+                    'GMT': "2:00",
                     'Key': APP_KEY
                     }
 
