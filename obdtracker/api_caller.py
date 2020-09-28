@@ -2,6 +2,7 @@ import http3
 import logging
 import asyncio
 import xml.etree.ElementTree
+import urllib
 from . import getapp
 from . import utils
 
@@ -30,6 +31,7 @@ class ApiCaller():
 
     async def connect(self):
         self.client = http3.AsyncClient()
+        logger.debug("Connected")
 
     async def getRequest(self, requestName, payload):
         """
@@ -49,12 +51,15 @@ class ApiCaller():
         if self.id is None and "DeviceID" in payload:
             self.id = payload["DeviceID"]
             logger.info("Saving ID: %s" % self.id)
-        response = await self.client.get(
-                    self.api_address+"/"+requestName,
-                    params = payload,
-                    headers = DEFAULT_HEADER
+        DEFAULT_HEADER["Content-Length"] = str(len(urllib.parse.urlencode(payload)))
+        logger.debug(f"connect to: {self.api_address}/{requestName} with payload: {urllib.parse.urlencode(payload)} and headers: {DEFAULT_HEADER}")
+
+        response = await self.client.post(
+                    url = self.api_address+"/"+requestName,
+                    data = urllib.parse.urlencode(payload),
+                    headers = DEFAULT_HEADER,
+                    timeout=100
                 )
-        
         self.last_response = response
         json = None
         if not response.status_code:
@@ -65,7 +70,7 @@ class ApiCaller():
             try:
                 json = utils.getJSON(response.text)
             except xml.etree.ElementTree.ParseError as e:
-                logger.debug(F"Can't parse response {len(response.content)}")
+                logger.debug(F"Can't parse response {response.text}")
 
             if requestName == "Login":
                 self.key = json["deviceInfo"]["key2018"]
@@ -80,7 +85,8 @@ class ApiCaller():
         response = self.client.post(
                                     self.api_address + "/" + requestName,
                                     data = payload,
-                                    headers = DEFAULT_HEADER
+                                    headers = DEFAULT_HEADER,
+                                    timeout=100
                                     )
         
         self.last_response = response

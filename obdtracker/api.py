@@ -65,11 +65,13 @@ class API(api_caller.ApiCaller):
     def __init__(self, server):
 
         super().__init__(server)
-        self.app_address = getapp(server)
+        self._server = server
         self.language = "en"
+        self.app_address = None
     
     async def doLogin(self, username, password):
 
+        self.app_address = getapp(self._server)
         payload = { 'Name': username,
                     'Pass': password,
                     'LoginType': 1,
@@ -79,7 +81,7 @@ class API(api_caller.ApiCaller):
                     }
 
         json = await self.getRequest('Login', payload)
-        logger.debug("doLogin: %s", json)
+        logger.debug(f"doLogin: %s", json)
         self.doSave(json)
     
     def doSave(self, response):
