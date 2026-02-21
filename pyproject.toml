@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "obdtracker"
+version = "0.2.7"
+authors = [
+  { name="Grzegorz Szostak", email="szostak.grzegorz@gmail.com" },
+]
+description = "Library to read data from http://www.aika168.com and other cloud services to track cars with GPS trackers installed"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "httpx>=0.24.0",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/nyxnyx/gps_obd2_tracker"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["obdtracker*"]

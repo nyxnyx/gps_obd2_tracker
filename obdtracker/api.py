@@ -1,108 +1,93 @@
-from . import getapp
-from . import utils
-from . import api_caller
-from . import updater
-import time
-
 import logging
+from typing import List, Optional, Any
+from . import api_caller
+from .updater import BaseUpdater
+from .models import DeviceInfo, LocationData, DeviceStatusData
+
 logger = logging.getLogger(__name__)
 
 APP_KEY = '7DU2DJFDR8321'
 
 class API(api_caller.ApiCaller):
     """
-    LoginAction - class used to perform login action and store all information from
-    different API calls. Options available after calling actions are availabe in __attrs__
-    table.
+    Main API class to interact with the OBD2 Tracker service.
     """
     
-    __attrs__ = [
-        'app_address',
-        'battery', # GetTracking, GetDeviceStatus, GetDeviceStatusFZE
-        'batteryStatus', # GetTracking, GetDeviceStatus, GetDeviceStatusFZE
-        'course', # GetTracking
-        'dataContext', # GetDeviceStatus, GetDeviceStatusFZE
-        'deviceID', # Login
-        'deviceName', # Login
-        'ICCID', # GetTracking
-        'icon', # Login, GetTracking
-        'id', # GetDeviceStatus, GetDeviceStatusFZE
-        'isGPS', # GetTracking
-        'isStop', # GetTracking
-        'key2018', # Login
-        'lat', # GetTracking
-        'lng', # GetTracking
-        'model', # Login
-        'new201710', # Login
-        'ofl', # GetTracking
-        'olat', # GetTracking
-        'olng', # GetTracking
-        'positionTime', # GetTracking
-        'serialNumber',
-        'sendCommand', # Login, GetDeviceStatus, GetDeviceStatusFZE
-        'speed', # GetTracking
-        'sn', # Login
-        'state', # Login, GetTracking, GetDeviceStatus, GetDeviceStatus2ByDDC, GetDeviceStatusFZE
-        'status', # GetTracking, GetDeviceStatus, GetDeviceStatusFZE
-        'statusX20', # GetTracking, GetDeviceStatus, GetDeviceStatusFZE
-        'stm', # GetTracking
-        'timeZone', # Login
-        'VIN', # GetTracking
-        'voice', # Login, GetDeviceStatus, GetDeviceStatusFZE
-        'warn', # GetTracking
-        'warnStr', # Login
-        'warnTime', # GetDeviceStatus, GetDeviceStatusFZE
-        'warnTxt', # GetDeviceStatus, GetDeviceStatusFZE
-        'work', # GetTracking
-        'xg', # Login
-        'yinshen' # GetDeviceStatus, GetDeviceStatusFZE
-    ]
-
-    INT_DATA = ['model', 'id', 'deviceID']
-    BOOL_DATA = ['isGPS', 'isStop', 'xg', 'icon', 'new201710', 'voice']
-    updaters = []
-    
-    def __init__(self, server):
-
+    def __init__(self, server: str):
         super().__init__(server)
-        self._server = server
         self.language = "en"
-        self.app_address = None
-    
-    async def doLogin(self, username, password):
+        self.updaters: List[BaseUpdater] = []
+        
+        # Data storage
+        self.device_info: Optional[DeviceInfo] = None
+        self.location: Optional[LocationData] = None
+        self.status: Optional[DeviceStatusData] = None
 
-        self.app_address = getapp(self._server)
-        payload = { 'Name': username,
-                    'Pass': password,
-                    'LoginType': 1,
-                    'LoginAPP': "AKSH",
-                    'GMT': "2:00",
-                    'Key': APP_KEY
-                    }
+    async def login(self, username, password):
+        """Perform login and store device information."""
+        payload = {
+            'Name': username,
+            'Pass': password,
+            'LoginType': 1,
+            'LoginAPP': "AKSH",
+            'GMT': "2:00",
+            'Key': APP_KEY
+        }
 
-        json = await self.getRequest('Login', payload)
-        logger.debug(f"doLogin: %s", json)
-        self.doSave(json)
-    
-    def doSave(self, response):
+        data = await self.get_request('Login', payload)
+        logger.debug("Login response: %s", data)
+        
+        if "deviceInfo" in data:
+            self.device_info = DeviceInfo.from_dict(data["deviceInfo"])
+            # Backward compatibility for IDs if needed
+            self.device_id = str(self.device_info.device_id)
+            
+    def update_from_response(self, response_data: dict):
+        """Update internal state from an API response dictionary."""
+        # This is a generic way to update if the response contains multiple bits of info
+        if "deviceInfo" in response_data:
+            self.device_info = DeviceInfo.from_dict(response_data["deviceInfo"])
+        
+        # Check for location-like data
+        if any(k in response_data for k in ["lat", "lng", "speed"]):
+            self.location = LocationData.from_dict(response_data)
+            
+        # Check for status-like data
+        if any(k in response_data for k in ["battery", "batteryStatus", "xg"]):
+            self.status = DeviceStatusData.from_dict(response_data)
 
-        if "deviceInfo" in response:
-            response = response["deviceInfo"]
+    async def send_command(self, content: str):
+        """
+        Send a generic command via the platform.
+        This sends a command that gets forwarded to the device (similar to SMS).
+        """
+        payload = {
+            "DeviceID": self.device_id,
+            "Content": content
+        }
+        data = await self.get_request("SendCommand", payload)
+        logger.debug("Send command response: %s", data)
+        return data
 
-        for key in self.__attrs__:
-            if key in response:
-                v = response[key]
-                if key in self.BOOL_DATA:
-                    v = (int(v) == 1)
-                elif key in self.INT_DATA:
-                    v = int(v)
-                setattr(self, key, v)
+    async def update(self):
+        """Execute all registered updaters."""
+        for updater in self.updaters:
+            await updater.update()
 
-    async def doUpdate(self):
-        if len(self.updaters) > 0:
-            for u in self.updaters:
-                await u.update()
+    def register_updater(self, updater_instance: BaseUpdater):
+        """Register a new updater component."""
+        if isinstance(updater_instance, BaseUpdater):
+            self.updaters.append(updater_instance)
 
-    def registerUpdater(self, interface):
-        if isinstance(interface, updater.isUpdater):
-            self.updaters.append(interface)    
+    # Legacy method names for compatibility if needed, but we should encourage new ones
+    async def doLogin(self, username, password): return await self.login(username, password)
+    async def doUpdate(self): return await self.update()
+    def registerUpdater(self, interface): return self.register_updater(interface)
+    def doSave(self, response): return self.update_from_response(response)
+
+    @property
+    def deviceID(self): return self.device_info.device_id if self.device_info else None
+    @property
+    def model(self): return self.device_info.model if self.device_info else None
+    @property
+    def timeZone(self): return "2:00" # Default from payload, could be made dynamic

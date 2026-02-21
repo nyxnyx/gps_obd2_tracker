@@ -1,105 +1,102 @@
-import http3
+import httpx
 import logging
 import asyncio
 import xml.etree.ElementTree
-import urllib
-from . import getapp
+from typing import Optional, Dict, Any
 from . import utils
+from .discovery import get_app_address
+from .exceptions import ObdTrackerConnectionError, ObdTrackerParseError
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_HEADER = {'Content-Type': 'application/x-www-form-urlencoded'}
 
-
-class ApiCaller():
+class ApiCaller:
     """
-    This is base class for all requests to API. This class makes calls and 
-    process responses.
+    Base class for all requests to API. 
+    Handles network communication and basic response parsing.
     """
-    __attrs__ = [
-        'api_source', 'api_address', 'key', 'client', 'last_response'
-    ]
-    def __init__(self, server):
-        """
-        param: server: This is SERVER addres not API endpoint address
-        """
+    
+    def __init__(self, server: str):
         self.api_source = server
-        self.api_address = getapp(self.api_source)
-        self.key = None
-        self.id = None
-        self.last_response = None
+        self.api_address: str = "" 
+        self.key: Optional[str] = None
+        self.device_id: Optional[str] = None
+        self._client: Optional[httpx.AsyncClient] = None
+
+    async def __aenter__(self):
+        await self.connect()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.close()
 
     async def connect(self):
-        self.client = http3.AsyncClient()
-        logger.debug("Connected")
-
-    async def getRequest(self, requestName, payload):
-        """
-        Process request, extracts required data and save it for next requests.
-        Returns JSON object from response.
-
-        param: requestName: It's a name of API endpoint
-        param: payload: dict of params to be send to API endpoint
-        """
-        if not hasattr(self, "client"):
-            await self.connect()
-
-        if '/' in requestName:
-            requestName = str(requestName).replace('/','')
-
-        self._addKey(requestName, payload)
-        if self.id is None and "DeviceID" in payload:
-            self.id = payload["DeviceID"]
-            logger.info("Saving ID: %s" % self.id)
-        DEFAULT_HEADER["Content-Length"] = str(len(urllib.parse.urlencode(payload)))
-        logger.debug(f"connect to: {self.api_address}/{requestName} with payload: {urllib.parse.urlencode(payload)} and headers: {DEFAULT_HEADER}")
-
-        response = await self.client.post(
-                    url = self.api_address+"/"+requestName,
-                    data = urllib.parse.urlencode(payload),
-                    headers = DEFAULT_HEADER,
-                    timeout=100
-                )
-        self.last_response = response
-        json = None
-        if not response.status_code:
-            raise Exception(message = response.content.decode() + response.headers)
-        elif len(response.content) == 0:
-            logger.debug("Content length is 0")
-        else:
-            try:
-                json = utils.getJSON(response.text)
-            except xml.etree.ElementTree.ParseError as e:
-                logger.debug(F"Can't parse response {response.text}")
-
-            if requestName == "Login":
-                self.key = json["deviceInfo"]["key2018"]
-
-            return json
-
-    async def postRequest(self, requestName, payload):
-
-        if not hasattr(self, "client"):
-            await self.connect()
-
-        response = self.client.post(
-                                    self.api_address + "/" + requestName,
-                                    data = payload,
-                                    headers = DEFAULT_HEADER,
-                                    timeout=100
-                                    )
+        """Initialize the API address and client."""
+        if not self.api_address:
+            self.api_address = await get_app_address(self.api_source)
         
-        self.last_response = response
-        return response
+        if self._client is None or self._client.is_closed:
+            self._client = httpx.AsyncClient(timeout=30.0)
+        logger.debug("Connected to %s", self.api_address)
 
-    def _addKey(self, requestName, payload):
+    async def close(self):
+        """Close the underlying HTTP client."""
+        if self._client:
+            await self._client.aclose()
+            self._client = None
 
-        if requestName != 'Login' and "Key" not in payload:
-            
+    def _add_key(self, request_name: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Add session key to payload if required."""
+        if request_name != 'Login' and "Key" not in payload:
             payload["Key"] = self.key
-        
         return payload
-    
-    def __del__(self):
-        asyncio.ensure_future(self.getRequest("ExitAndroid", payload={"ID": self.id, "TypeID": "1", "Key": self.key } ) )
-        logger.info("Destructor")
+
+    async def get_request(self, request_name: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Performs an API request and returns the parsed JSON response.
+        """
+        if self._client is None:
+            await self.connect()
+
+        request_name = request_name.strip('/')
+        self._add_key(request_name, payload)
+        
+        if self.device_id is None and "DeviceID" in payload:
+            self.device_id = str(payload["DeviceID"])
+
+        logger.debug("Request: %s/%s | Payload: %s", self.api_address, request_name, payload)
+
+        try:
+            response = await self._client.post(
+                f"{self.api_address}/{request_name}",
+                data=payload,
+                headers=DEFAULT_HEADER
+            )
+            response.raise_for_status()
+        except httpx.HTTPError as e:
+            raise ObdTrackerConnectionError(f"HTTP request failed: {e}") from e
+
+        try:
+            # The API returns JSON wrapped in XML text
+            data = utils.getJSON(response.text)
+        except Exception as e:
+            logger.debug("Raw response: %s", response.text)
+            raise ObdTrackerParseError(f"Failed to parse API response: {e}") from e
+
+        if request_name == "Login" and "deviceInfo" in data:
+            self.key = data["deviceInfo"].get("key2018")
+
+        return data
+
+    async def logout(self):
+        """Signal the API that we are exiting."""
+        if self.device_id and self.key:
+            try:
+                await self.get_request(
+                    "ExitAndroid", 
+                    payload={"ID": self.device_id, "TypeID": "1", "Key": self.key}
+                )
+            except Exception:
+                pass # Best effort logout
+

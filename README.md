@@ -12,27 +12,33 @@ mobile app that usuary is shown on pages where somebody is selling device. If yo
 Map with blue top bar with reload button on right and back arrow on left. This is AIKA app. And here is a link to Google app store: [AIKA app](https://play.google.com/store/apps/details?id=com.fw.gps.xinmai&hl=en_US).
 
 # How to use this code?
-It's a library. To integrate with your code you have to write something like this:
-```
-from obdtracker import api, device_status, obd, location
-import logging
+It's an asynchronous library. To integrate with your code:
 
-def main():
-    la = api.API("http://www.aika168.com/")
-    la.registerUpdater(location.Location(la))
-    la.registerUpdater(device_status.DeviceStatus(la))
+```python
+import asyncio
+from obdtracker import API, Location, DeviceStatus
 
-    loop = asyncio.get_event_loop()
+async def main():
+    # Use the context manager to ensure connections are closed
+    async with API("http://www.aika168.com/") as tracker:
+        tracker.register_updater(Location(tracker))
+        tracker.register_updater(DeviceStatus(tracker))
 
-    loop.run_until_complete(la.doLogin('<Your device id>', '<Your server password>') )
-    loop.run_until_complete(la.doUpdate())
+        # Login and update data
+        await tracker.login('<Your device id>', '<Your server password>')
+        await tracker.update()
 
-    attrs = vars(la)
-    print(', '.join("%s: %s" % item for item in attrs.items()))
+        # Access typed data
+        if tracker.location:
+             print(f"Position: {tracker.location.lat}, {tracker.location.lng}")
+        
+        if tracker.status:
+             print(f"Battery: {tracker.status.battery}%")
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
 ```
+
 
 # NEW: list of UNSUPPORTED mobile applications
 If you are going to buy GPS OBD2 Tracker checkout this list to see which mobile apps are unsupported. Acually it means that those mobile apps use cloud service that is not supported with this tool:

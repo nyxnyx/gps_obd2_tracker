@@ -1,13 +1,17 @@
 from xml.etree import ElementTree
 from json.decoder import JSONDecoder
-import logging
+from typing import Dict, Any
 
-def getJSON(xml_string):
+def get_json(xml_string: str) -> Dict[str, Any]:
     """
     Will return JSON tree only from OpenAPIv3 response.
-
-    params: xml_string: OpenAPIv3 response XML string.
+    The response is usually an XML document with JSON content in the root element's text.
     """
-    
     tree = ElementTree.fromstring(xml_string)
+    if tree.text is None:
+        return {}
     return JSONDecoder().decode(tree.text)
+
+# Legacy naming for compatibility
+def getJSON(xml_string: str) -> Dict[str, Any]:
+    return get_json(xml_string)

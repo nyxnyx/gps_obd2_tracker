@@ -19,7 +19,7 @@ class build_py(build_py_orig):
 
 setup(
     name="obdtracker", # Replace with your own username
-    version="0.2.5",
+    version="0.2.6",
     author="Grzegorz Szostak",
     author_email="szostak.grzegorz@gmail.com",
     description="Library to read data from http://www.aika168.com and other cloud services to track cars with GPS trackers installed",

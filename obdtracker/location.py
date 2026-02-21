@@ -1,16 +1,13 @@
 import logging
-from . import api, updater
+from .updater import BaseUpdater
 
 logger = logging.getLogger(__name__)
 
-class Location(updater.isUpdater):
+class Location(BaseUpdater):
+    """Component to update device location from the API."""
 
-    def __init__(self, interface):
-
-        self.api = interface
-
-    async def getTracking(self):
-
+    async def get_tracking(self):
+        """Fetch tracking data (GPS location)."""
         payload = {
             "DeviceID": self.api.deviceID,
             "Model": self.api.model,
@@ -19,9 +16,10 @@ class Location(updater.isUpdater):
             "Language": self.api.language
         }
 
-        json = await self.api.getRequest("GetTracking", payload)
-        logger.debug(json)
-        self.api.doSave(json)
+        data = await self.api.get_request("GetTracking", payload)
+        logger.debug("Location Data: %s", data)
+        self.api.update_from_response(data)
     
     async def update(self):
-        await self.getTracking()
+        """Default update implementation."""
+        await self.get_tracking()

@@ -1,22 +1,20 @@
 import logging
-import requests
-
-from . import api, utils
+from .updater import BaseUpdater
 
 logger = logging.getLogger(__name__)
 
-
-class OBD:
-
-    def __init__(self, interface):
-        
-        self.api = interface
+class OBD(BaseUpdater):
+    """Component to update OBD data from the API."""
     
-    def get_obd_data(self):
-
+    async def get_obd_data(self):
+        """Fetch OBD status/data."""
         payload = {
             "DeviceID": self.api.deviceID
         }
-        json = self.api.getRequest("GetOBDCheck", payload)
-        logger.debug(json)
-        self.api.doSave(payload)
+        data = await self.api.get_request("GetOBDCheck", payload)
+        logger.debug("OBD Data: %s", data)
+        self.api.update_from_response(data)
+
+    async def update(self):
+        """Default update implementation."""
+        await self.get_obd_data()

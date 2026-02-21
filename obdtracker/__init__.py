@@ -1,24 +1,30 @@
-import requests
 import logging
+from .discovery import get_app_address
+from .api import API
+from .api_caller import ApiCaller
+from .device_status import DeviceStatus
+from .location import Location
+from .obd import OBD
+from .updater import BaseUpdater
+from .exceptions import (
+    ObdTrackerError, 
+    ObdTrackerAuthError, 
+    ObdTrackerConnectionError, 
+    ObdTrackerParseError
+)
 
-logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
 
-__all__=['login_action', 'device_status', 'obd', 'location']
-
-APP_ENDPOINT="/getapp.aspx"
-
-def getapp(server) -> str:
-    """
-    Returns application address from server. 
-    If server address is an empty string will use http://www.aika168.com
-    """
-
-    if server == "":
-        server = "http://www.aika168.com"
-        
-    r = requests.get(server+APP_ENDPOINT)
-    logger.debug(r.content)
-    return ""+str(r.content.decode())
-    
+__all__ = [
+    "get_app_address",
+    "API",
+    "ApiCaller",
+    "DeviceStatus",
+    "Location",
+    "OBD",
+    "BaseUpdater",
+    "ObdTrackerError",
+    "ObdTrackerAuthError",
+    "ObdTrackerConnectionError",
+    "ObdTrackerParseError",
+]
