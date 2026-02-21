@@ -34,9 +34,24 @@ async def main():
         
         if tracker.status:
              print(f"Battery: {tracker.status.battery}%")
+             print(f"Ignition is {'ON' if tracker.status.is_ignition_on else 'OFF'}")
+             print(f"Warning: {tracker.status.warning_type.name}")
 
+        # You can also send commands to the device across the network
+        # await tracker.send_command("DY") # Cut oil/electricity
+        
 if __name__ == "__main__":
     asyncio.run(main())
+```
+
+### SMS Fallback Generator
+If the GPS tracker doesn't connect to the internet, you can create standard SMS commands using `SMSCommandBuilder`:
+
+```python
+from obdtracker.sms import SMSCommandBuilder
+sms = SMSCommandBuilder(password="123456")
+message = sms.set_speed_alarm(80) 
+print(message) # "speed123456 080"
 ```
 
 
@@ -50,5 +65,7 @@ If you are going to buy GPS OBD2 Tracker checkout this list to see which mobile 
 
 # What is next step?
 Right now I'm working on:
-- Home Assistant device tracker
 - App for getting information about protocol between device and gateway at XX.aika168.com
+- Further expanding commands and mapping hardware protocols.
+
+**Home Assistant Integration**: The Home Assistant custom component for this library is available at [maika](https://github.com/nyxnyx/maika).
