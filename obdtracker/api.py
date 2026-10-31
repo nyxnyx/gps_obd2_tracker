@@ -56,18 +56,65 @@ class API(api_caller.ApiCaller):
         if any(k in response_data for k in ["battery", "batteryStatus", "xg"]):
             self.status = DeviceStatusData.from_dict(response_data)
 
-    async def send_command(self, content: str):
+    # Command aliases so callers can keep using the raw tracker command names:
+    # the openapiv3 API only accepts the platform's app-level command names.
+    COMMAND_ALIASES = {
+        "DY": "808DYD",    # cut oil / engine
+        "KY": "808HFYD",   # restore oil / engine
+    }
+
+    async def send_command(self, command_type: str, parameter: str = ""):
         """
-        Send a generic command via the platform.
-        This sends a command that gets forwarded to the device (similar to SMS).
+        Queue a command for the device via SendCommandByAPP.
+
+        Returns the server's result code (-5 = accepted/queued, -4 = invalid
+        command for this device). Dispatch to the device is asynchronous; use
+        `get_response`/`get_command_list` to read the device's acknowledgement.
         """
+        if self.device_info is None:
+            raise RuntimeError("login() must succeed before send_command()")
+
         payload = {
-            "DeviceID": self.device_id,
-            "Content": content
+            "SN": self.device_info.sn or "",
+            "DeviceID": int(self.device_info.device_id),
+            "CommandType": self.COMMAND_ALIASES.get(command_type, command_type),
+            "Model": int(self.device_info.model or 0),
+            "Paramter": parameter,
+            "Key": self.key,
         }
-        data = await self.get_request("SendCommand", payload)
+        data = await self.get_request("SendCommandByAPP", payload)
         logger.debug("Send command response: %s", data)
         return data
+
+    async def get_command_list(self, page_no: int = 1, page_count: int = 50, time_zones: str = "2:00", language: str = "en"):
+        """
+        Fetch the device's command history/catalog, including dispatch state
+        (isSend) and the device acknowledgement (isResponse, responseText).
+        """
+        payload = {
+            "SN": self.device_info.sn if self.device_info else "",
+            "DeviceID": int(self.device_info.device_id) if self.device_info else "",
+            "PageNo": str(page_no),
+            "PageCount": str(page_count),
+            "TimeZones": time_zones,
+            "Language": language,
+            "Key": self.key,
+        }
+        return await self.get_request("GetCommandList", payload)
+
+    async def get_response(self, command_id: int, time_zones: str = "2:00"):
+        """Poll the response of a previously queued command by its ID."""
+        if self.device_info is None:
+            raise RuntimeError("login() must succeed before get_response()")
+        payload = {
+            "SN": self.device_info.sn or "",
+            "DeviceID": int(self.device_info.device_id),
+            "CommandID": str(command_id),
+            "TimeZones": time_zones,
+            "Key": self.key,
+        }
+        return await self.get_request("GetResponse", payload)
+
 
     async def update(self):
         """Execute all registered updaters."""
